@@ -1,0 +1,34 @@
+name: Amazon job alert
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: amazon-job-alert
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for new Amazon jobs
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python3 amazon_job_alert.py
+
+      - name: Save seen jobs
+        run: |
+          if [ -n "$(git status --porcelain seen_jobs.json)" ]; then
+            git config user.name "job-alert-bot"
+            git config user.email "job-alert-bot@users.noreply.github.com"
+            git add seen_jobs.json
+            git commit -m "Update seen jobs"
+            git push
+          fi
