@@ -15,12 +15,15 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
 
       - name: Check for new Amazon jobs
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          LOOP_SECONDS: "290"
+          INTERVAL: "10"
         run: python3 amazon_job_alert.py
 
       - name: Save seen jobs
